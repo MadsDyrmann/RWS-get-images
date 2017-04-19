@@ -1,0 +1,57 @@
+#
+# ExifTool config file to add proprietary Fotostation XMP tags
+#
+# Created:  2012-09-19 by Phil Harvey
+#
+%Image::ExifTool::UserDefined = (
+    'Image::ExifTool::XMP::Main' => {
+        fwc => {
+            SubDirectory => {
+                TagTable => 'Image::ExifTool::UserDefined::fwc',
+            },
+        },
+        fwl => {
+            SubDirectory => {
+                TagTable => 'Image::ExifTool::UserDefined::fwl',
+            },
+        },
+        fwu => {
+            SubDirectory => {
+                TagTable => 'Image::ExifTool::UserDefined::fwu',
+            },
+        },
+    },
+);
+
+%Image::ExifTool::UserDefined::fwc = (
+    GROUPS        => { 0 => 'XMP', 1 => 'XMP-fwc', 2 => 'Image' },
+    NAMESPACE     => { 'fwc' => 'http://ns.fotoware.com/iptcxmp-custom/1.0/' },
+    WRITABLE      => 'string',
+    CustomField1  => { },
+    CustomField2  => { },
+    OriginalImage  => { },
+    PixelsPerMm  => { },
+);
+
+%Image::ExifTool::UserDefined::fwl = (
+    GROUPS        => { 0 => 'XMP', 1 => 'XMP-fwl', 2 => 'Image' },
+    NAMESPACE     => { 'fwl' => 'http://ns.fotoware.com/iptcxmp-legacy/1.0/' },
+    WRITABLE      => 'string',
+    LocalCaption  => { },
+    CustomField2  => { },
+    OriginalImage  => { },
+    PixelsPerMm  => { },
+);
+
+%Image::ExifTool::UserDefined::fwu = (
+    GROUPS        => { 0 => 'XMP', 1 => 'XMP-fwu', 2 => 'Image' },
+    NAMESPACE     => { 'fwu' => 'http://ns.fotoware.com/iptcxmp-user/1.0/' },
+    WRITABLE      => 'string',
+    UserDefined1  => { },
+    UserDefined2  => { },
+    UserDefined253=> { },
+    UserDefined254=> { },
+    UserDefined255=> { },
+);
+
+1;  #end
