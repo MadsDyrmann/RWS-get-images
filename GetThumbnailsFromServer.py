@@ -133,8 +133,10 @@ def createIfNotExist(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)    
 
+
+
 #Download a zip with all images form a single upload
-def getRoboWeedSupportUpload(uploadid):
+def getRoboWeedSupportUploadAsZip(uploadid):
     #See if folder has been downloaded previously
     if not os.path.exists('./'+uploadid):
         #If folder and zip-file don't exist
@@ -181,28 +183,13 @@ def getRoboWeedSupportUpload(uploadid):
 def getRoboWeedSupportAnnotationData(uploadid):
      
     #Get the annotation data
-    if not os.path.exists('./' + "data_"+uploadid +".zip"): #if zip does not exist, download it
-        #Old method,
-#        webpage = r"http://roboweedsupport.com/Administration/ViewUpload?uploadid="+str(uploadid) # edit me
-#        
-#        browser = webdriver.Firefox()
-#        #browser.implicitly_wait(5)
-#        browser.get(webpage)
-#        browser.find_element_by_class_name('btn-primary').click() 
-#        
-#        browser.close()    
-        #New method
-        pass
     requests.get('http://roboweedsupport.com/api/export/annotation/'+str(uploadid))
-
     url='http://roboweedsupport.com/ExportedData/data_'+uploadid+'.zip'
-    #wget.download(url,bar=wget.bar_adaptive)
+
     localfile='data_' + uploadid + ".zip"
-    
     os.system('wget -N '+url+' -O "'+localfile+'"')
         
-
-    url='data_' + uploadid + ".zip"
+    #url='data_' + uploadid + ".zip"
     unzipFile(localfile,path=uploadid)
 
 
@@ -221,10 +208,8 @@ def getImagesBasedOnImageAPI(uploadid):
     #Parse string to list of urls for images
     datalist=[line[0] for line in reader(data) if any(line) and len(line)==1 and len(line[0])>5]
     
-
     
-    #download file
-    #Download in parallel
+    #download file in parallel
     DownladImagesExecutor = ThreadPoolExecutor(max_workers=10)
     Downloadfutures = []    
 
@@ -298,7 +283,9 @@ def getImage(baseimagepath,Outimagepath,filename):
             cmd='wget -O "'+str(Outimagepath)+'/'+filename+'" "'+teststr+'"'
             os.system(cmd)
 
-#If roboweedsupport has not been updated, use alternative download method
+
+
+#If roboweedsupport has not been updated to pack zip files, use alternative download method
 #This method simply looks through all possible imagenames for all upload ids. It is slow, but works
 def getRoboWeedSupportUploadHack(uploadid):
     from BeautifulSoup import BeautifulSoup
@@ -332,6 +319,7 @@ def getRoboWeedSupportUploadHack(uploadid):
     
     executor.shutdown(wait=True)
     
+
 
 def getAnnotationDictionary(annotations, speciesDictionary):
     #Remove empty lines
@@ -494,8 +482,8 @@ def exportThumbnails(annotationDict,dirname,imagepath):
         PILimage.save(writefilename,compression="tiff_adobe_deflate")
         
         cmd1="exiftool -q -m -overwrite_original -TagsFromFile " + '"' + imagepath + '"' + ' '+ '"' + writefilename + '"'
-        cmd2='exiftool -config "'+os.path.join(currentDir,'ExifTool_config').encode('utf8') + '" -q -m -overwrite_original -OriginalImage=' + '"' + imagepath + '"' + ' '+ '"' + writefilename+ '"'
-        cmd3='exiftool -config "'+os.path.join(currentDir,'ExifTool_config').encode('utf8') + '" -q -m -overwrite_original -PixelsPerMm=' + '"' + str(pixelspermm) + '"' + ' '+ '"' + writefilename + '"'
+        #cmd2='exiftool -config "'+os.path.join(currentDir,'ExifTool_config').encode('utf8') + '" -q -m -overwrite_original -OriginalImage=' + '"' + imagepath + '"' + ' '+ '"' + writefilename+ '"'
+        #cmd3='exiftool -config "'+os.path.join(currentDir,'ExifTool_config').encode('utf8') + '" -q -m -overwrite_original -PixelsPerMm=' + '"' + str(pixelspermm) + '"' + ' '+ '"' + writefilename + '"'
         
         #added 2016-10-26
         cmd23='exiftool -config "'+os.path.join(currentDir,'ExifTool_config').encode('utf8') +'" -q -m -overwrite_original -OriginalImage=' + '"' + imagepath + '"' +  ' -PixelsPerMm=' + '"' + str(pixelspermm) + '"'  + ' '+ '"' + writefilename+ '"'
@@ -511,7 +499,7 @@ def exportThumbnails(annotationDict,dirname,imagepath):
 def strechHSV(image):
     print('HSV IS BEING STRECHED!')
     from skimage import color, exposure
-#    from scipy import misc
+
     
     imageHSV=color.rgb2hsv(image)
     #p2, p98 = np.percentile(imageHSV[:,:,0], (1, 99))
@@ -522,7 +510,7 @@ def strechHSV(image):
     imageHSV[:,:,2] = exposure.rescale_intensity(imageHSV[:,:,2], in_range=(p2, p98))
     image=(color.hsv2rgb(imageHSV)*255).astype(np.uint8)
     
-
+    #from scipy import misc
     #p2, p98 = np.percentile(img, (2, 98))
     #image=exposure.rescale_intensity(image, in_range=(p2, p98))
     #misc.imsave('testimg.jpg',image)
@@ -546,7 +534,6 @@ def get_PixelsPermmtxt_indirOrParentDir(directory):
 
 
 def exportPixelPermm(exportdir,pixelsPermm):   
-        #if float(area)>0: #If area is defined
         createIfNotExist(exportdir)
         with open(os.path.join(exportdir,'pixelsPermm.txt'),'w') as f:
             f.write(str(pixelsPermm))
@@ -694,7 +681,6 @@ def exportDetectionDataKittiFormat(imagepath,annotations,skipUnsorted=False):
             ymax=int(max(ycoordinates)+np.floor(brushsize/2))  
             
                       
-            
             #Get truncated area
             
             #Number of pixels of annotation that is in the image
@@ -723,8 +709,6 @@ def exportDetectionDataKittiFormat(imagepath,annotations,skipUnsorted=False):
         annotationDir,filename=os.path.split(imagepath)
         
         #Save file with annotations
-
-
         if not os.path.exists(os.path.join('KittiAnnotations',annotationDir,'Annotations')):
             os.makedirs(os.path.join('KittiAnnotations',annotationDir,'Annotations'))
         with open(os.path.join('KittiAnnotations',annotationDir,'Annotations',annotationfile+'.txt'), 'w') as f:
@@ -837,7 +821,6 @@ def exportLocalizationDataForYOLO(imagepath,annotations,skipUnsorted=False):
             
   
             
-            
 def cropImageFromAnnotation(jsonentry, image, annotateSquare=False):
     jsonDict=jsonreader.decode(jsonentry)
     
@@ -930,9 +913,6 @@ def cropImageFromAnnotation(jsonentry, image, annotateSquare=False):
     Imasked = Icropped*np.tile(ImaskDilate,(3,1,1)).transpose(1,2,0)
     Ialpha = np.concatenate((Icropped,np.expand_dims(ImaskDilate*255,2)),axis=2)
 
-        
-    
-   # print(time.time()-t)
     return Icropped, Imasked, Ialpha
     
 
@@ -965,8 +945,6 @@ def getZip(url):
         f.write(buffer)
         status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
         status = status + chr(8)*(len(status)+1)
-        #print status,
-        #print status,"           \r",
         print(status, end='\r')    
     f.close()
         
