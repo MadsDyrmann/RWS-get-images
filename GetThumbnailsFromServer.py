@@ -187,12 +187,25 @@ def getRoboWeedSupportAnnotationData(uploadid):
     url='http://roboweedsupport.com/ExportedData/data_'+uploadid+'.zip'
 
     localfile='data_' + uploadid + ".zip"
-    os.system('wget -N '+url+' -O "'+localfile+'"')
+    
+
+    download_file(url,localfile)
+    #os.system('wget -N '+url+' -O "'+localfile+'"')
         
     #url='data_' + uploadid + ".zip"
     unzipFile(localfile,path=uploadid)
 
 
+def download_file(url,local_filename):
+    local_filename = url.split('/')[-1]
+    # NOTE the stream=True parameter
+    r = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024): 
+            if chunk: # filter out keep-alive new chunks
+                f.write(chunk)
+                #f.flush() commented by recommendation from J.F.Sebastian
+    return local_filename
 
 
 #Download all images using API
@@ -256,8 +269,6 @@ def getImagesBasedOnAnnotations(uploadid,allAnnotations=False):
     #For all images, see if it exists, then download
     for txtfile in okTxtfiles:
         for extension in imageExt:
-            
-
             if not os.path.exists(os.path.join(uploadid,txtfile.replace('.txt',extension))):
                 #Copy from rws server, if computer is tbrain2
                 if os.path.exists(os.path.join('/mnt/rwsdata/',uploadid,txtfile.replace('.txt',extension))):
@@ -310,12 +321,10 @@ def getRoboWeedSupportUploadHack(uploadid):
 
     #Download in parallel
     executor = ThreadPoolExecutor(max_workers=100)
-    futures = []    
 
     #For all images, see if it exists, then download
     for filename in imagelist:
-        a = executor.submit(getImage, baseimagepath,uploadid,filename)
-        futures.append(a)            
+        executor.submit(getImage, baseimagepath,uploadid,filename)        
     
     executor.shutdown(wait=True)
     
