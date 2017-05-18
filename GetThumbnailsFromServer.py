@@ -197,7 +197,8 @@ def getRoboWeedSupportAnnotationData(uploadid):
 
 
 def download_file(url,local_filename):
-    local_filename = url.split('/')[-1]
+    print('Downloading '+url+'\r')
+    #local_filename = url.split('/')[-1]
     # NOTE the stream=True parameter
     r = requests.get(url, stream=True)
     with open(local_filename, 'wb') as f:
@@ -230,6 +231,10 @@ def getImagesBasedOnImageAPI(uploadid):
     for imageurl in datalist:
         filename=os.path.split(imageurl)[-1]
         a = DownladImagesExecutor.submit(getImage, baseimagepath,uploadid,filename)
+        
+        #TEST
+        #getImage(baseimagepath,uploadid,filename)
+        #TEST
         Downloadfutures.append(a)           
 
     DownladImagesExecutor.shutdown(wait=True)
@@ -291,8 +296,12 @@ def getImage(baseimagepath,Outimagepath,filename):
         if r.status_code==200: #200 = request accepted
             
             createIfNotExist(str(Outimagepath))
-            cmd='wget -O "'+str(Outimagepath)+'/'+filename+'" "'+teststr+'"'
-            os.system(cmd)
+            #cmd='wget -O "'+str(Outimagepath)+'/'+filename+'" "'+teststr+'"'
+            #os.system(cmd)
+            
+            download_file(teststr,str(Outimagepath)+'/'+filename)
+            
+            
 
 
 
